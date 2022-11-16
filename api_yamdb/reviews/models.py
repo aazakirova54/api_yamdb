@@ -6,6 +6,7 @@ from .validators import year_validator
 class Genre(models.Model):
     name = models.CharField(
         verbose_name='название',
+        max_length=200
     )
     slug = models.SlugField(
         verbose_name='название-ссылка',
@@ -24,6 +25,7 @@ class Genre(models.Model):
 class Category(models.Model):
     name = models.CharField(
         verbose_name='название',
+        max_length=200
     )
     slug = models.SlugField(
         verbose_name='название-ссылка',
