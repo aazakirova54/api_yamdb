@@ -1,7 +1,36 @@
-from api.serializers import CommentSerializer, ReviewSerializer
-from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ModelViewSet
-from reviews.models import Comment, Review, Title
+from django.shortcuts import get_object_or_404
+from reviews.models import Title, Category, Genre, Comment, Review, Title
+from .serializers import (TitleSerializer,
+                          TitleReadSerializer,
+                          CategorySerializer,
+                          GenreSerializer,
+                          CommentSerializer,
+                          ReviewSerializer,
+                         )
+
+
+class TitleViewSet(ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    permission_classes = ()
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrive'):
+            return TitleReadSerializer
+        return TitleSerializer
+
+
+class CategoryViewSet(ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = ()
+
+
+class GenreViewSet(ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = ()
 
 
 class ReviewViewSet(ModelViewSet):
