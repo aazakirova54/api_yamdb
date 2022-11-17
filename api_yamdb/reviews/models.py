@@ -27,7 +27,7 @@ class Review(models.Model):
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
-        auto_now_add=True
+        auto_now_add=True,
     )
 
     class Meta:
@@ -47,4 +47,30 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    pass
+    author = models.ForeignKey(
+        User,
+        verbose_name='Автор',
+        on_delete=models.CASCADE,
+    )
+    review = models.ForeignKey(
+        Review,
+        verbose_name='Отзыв',
+        on_delete=models.CASCADE,
+    )
+    text = models.TextField(
+        verbose_name='Текст комментария',
+        max_length=500,
+    )
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        auto_now_add=True,
+    )
+
+    class Meta:
+        default_related_name = 'comments'
+        ordering = ['-pub_date']
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text[:TEXT_LIMIT]
