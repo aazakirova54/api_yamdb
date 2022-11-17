@@ -10,14 +10,16 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username',
         default=serializers.CurrentUserDefault()
     )
-    title = SlugRelatedField(
-        read_only=True,
-        slug_field='name'
-    )
 
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = (
+            'id',
+            'text',
+            'author',
+            'score',
+            'pub_date'
+        )
 
     def validate(self, data):
         title_id = self.context.get('view').kwargs.get('title_id')
