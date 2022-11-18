@@ -2,6 +2,10 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from .validators import year_validator
+
+TEXT_LIMIT = 15
+
 USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'
@@ -64,9 +68,6 @@ class User(AbstractUser):
         if self.role == ADMIN:
             return True
         return False
-from .validators import year_validator
-
-TEXT_LIMIT = 15
 
 
 class Genre(models.Model):
