@@ -3,9 +3,10 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from django.db.models import Avg
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Comment, Genre, Review, Title, User
@@ -13,7 +14,8 @@ from reviews.models import Category, Comment, Genre, Review, Title, User
 from api_yamdb.settings import EMAIL_ADMIN
 
 from .mixins import CreateLisDestroytViewSet
-from .permissions import IsAdminOrStaff, IsUser, IsAuthorOrAdminOrModerator
+from .permissions import (IsAdminOrStaff, IsUser,
+                          IsAuthorOrAdminOrModerator, IsAdminOrReadOnly)
 from .serializers import (AuthSignUpSerializer, AuthTokenSerializer,
                           CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
@@ -21,9 +23,10 @@ from .serializers import (AuthSignUpSerializer, AuthTokenSerializer,
 
 
 class TitleViewSet(ModelViewSet):
-    queryset = Title.objects.all()
-    serializer_class = TitleSerializer
-    permission_classes = ()
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).order_by('name').all()
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrive'):
@@ -34,13 +37,13 @@ class TitleViewSet(ModelViewSet):
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminOrStaff,)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class GenreViewSet(CreateLisDestroytViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminOrStaff,)
+    permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
 
 
