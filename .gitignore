@@ -150,4 +150,6 @@ media/
 
 sent_emails/
 
+
 reviews/migrations/
+.migrations
