@@ -14,3 +14,11 @@ class IsAdminOrStaff(permissions.BasePermission):
                 request.user.is_authenticated
                 and request.user.is_admin)
         )
+
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    pass
+
+
+class IsAuthorOrAdminOrModerator(permissions.BasePermission):
+    pass
