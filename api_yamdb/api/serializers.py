@@ -1,8 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-from reviews.models import Title, Category, Genre, Comment, Review, Title
-from reviews.models import User
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
 FORBIDDEN_NAME = 'me'
 FORBIDDEN_NAME_MSG = 'Имя пользователя "me" не разрешено.'
