@@ -6,12 +6,13 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from .mixins import CreateLisDestroytViewSet
+
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 from api_yamdb.settings import EMAIL_ADMIN
 
+from .mixins import CreateLisDestroytViewSet
 from .permissions import IsAdminOrStaff, IsUser
 from .serializers import (AuthSignUpSerializer, AuthTokenSerializer,
                           CategorySerializer, CommentSerializer,
@@ -33,13 +34,13 @@ class TitleViewSet(ModelViewSet):
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = ()
+    permission_classes = (IsAdminOrStaff,)
 
 
 class GenreViewSet(CreateLisDestroytViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = ()
+    permission_classes = (IsAdminOrStaff,)
     lookup_field = 'slug'
 
 
