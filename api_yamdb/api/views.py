@@ -13,7 +13,7 @@ from reviews.models import Category, Comment, Genre, Review, Title, User
 from api_yamdb.settings import EMAIL_ADMIN
 
 from .mixins import CreateLisDestroytViewSet
-from .permissions import IsAdminOrStaff, IsUser
+from .permissions import IsAdminOrStaff, IsUser, IsAuthorOrAdminOrModerator
 from .serializers import (AuthSignUpSerializer, AuthTokenSerializer,
                           CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
@@ -46,28 +46,28 @@ class GenreViewSet(CreateLisDestroytViewSet):
 
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthorOrAdminOrModerator,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
+        title = get_object_or_404(Title, id=title_id)
         return title.reviews.all()
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
+        title = get_object_or_404(Title, id=title_id)
         serializer.save(author=self.request.user, title=title)
 
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthorOrAdminOrModerator,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, pk=title_id)
         review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, pk=review_id)
+        review = get_object_or_404(Review, id=review_id)
         return Comment.objects.filter(review=review)
 
     def perform_create(self, serializer):
