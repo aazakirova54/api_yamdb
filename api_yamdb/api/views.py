@@ -14,7 +14,7 @@ from reviews.models import Category, Comment, Genre, Review, Title, User
 
 from api_yamdb.settings import EMAIL_ADMIN
 
-from .mixins import CreateLisDestroytViewSet
+from .mixins import CreateListDestroyViewSet
 from .permissions import (IsAdminOrStaff, IsUser,
                           IsAuthorOrAdminOrModerator, IsAdminOrReadOnly)
 from .serializers import (AuthSignUpSerializer, AuthTokenSerializer,
@@ -35,15 +35,16 @@ class TitleViewSet(ModelViewSet):
         return TitleSerializer
 
 
-class CategoryViewSet(ModelViewSet):
+class CategoryViewSet(CreateListDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
 
-class GenreViewSet(CreateLisDestroytViewSet):
+class GenreViewSet(CreateListDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
