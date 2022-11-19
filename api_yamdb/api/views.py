@@ -30,9 +30,9 @@ class TitleViewSet(ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
 
     def get_serializer_class(self):
-        if self.action in ('list', 'retrive'):
-            return TitleReadSerializer
-        return TitleSerializer
+        if self.request.method in ('POST', 'PATCH',):
+            return TitleSerializer
+        return TitleReadSerializer
 
 
 class CategoryViewSet(CreateListDestroyViewSet):
