@@ -8,12 +8,14 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from django.db.models import Avg
 from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 from api_yamdb.settings import EMAIL_ADMIN
 
+from .filter import TitleFilter
 from .mixins import CreateListDestroyViewSet
 from .permissions import (IsAdminOrStaff, IsUser,
                           IsAuthorOrAdminOrModerator, IsAdminOrReadOnly)
@@ -28,6 +30,8 @@ class TitleViewSet(ModelViewSet):
         rating=Avg('reviews__score')
     ).order_by('name').all()
     permission_classes = (IsAdminOrReadOnly,)
+    filterset_class = TitleFilter
+    filter_backends = (DjangoFilterBackend,)
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH',):
