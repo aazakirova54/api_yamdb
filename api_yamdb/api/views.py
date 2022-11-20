@@ -19,7 +19,8 @@ from .permissions import (IsAdminOrReadOnly, IsAdminOrStaff,
 from .serializers import (AuthSignUpSerializer, AuthTokenSerializer,
                           CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
-                          TitleReadSerializer, TitleSerializer, UserSerializer)
+                          TitleReadSerializer, TitleWriteSerializer,
+                          UserSerializer)
 from api_yamdb.settings import EMAIL_ADMIN
 from reviews.models import Category, Genre, Review, Title, User
 
@@ -34,7 +35,7 @@ class TitleViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH',):
-            return TitleSerializer
+            return TitleWriteSerializer
         return TitleReadSerializer
 
 
