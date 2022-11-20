@@ -1,10 +1,12 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
+
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 FORBIDDEN_NAME = 'me'
 FORBIDDEN_NAME_MSG = 'Имя пользователя "me" не разрешено.'
+USER_EXISTS_MSG = 'Пользователь с таким username уже зарегистрирован'
+EMAIL_EXISTS_MSG = 'Указанная почта уже зарегестрирована другим пользователем'
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -21,7 +23,7 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleWriteSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Category.objects.all(),
@@ -48,7 +50,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = SlugRelatedField(
+    author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
         default=serializers.CurrentUserDefault()
@@ -65,12 +67,13 @@ class ReviewSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        request = self.context['request']
-        author = request.user
-        title_id = self.context.get('view').kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
-        if request.method == 'POST':
-            if Review.objects.filter(title=title, author=author).exists():
+        if self.context['request'].method == 'POST':
+            request = self.context['request']
+            title_id = self.context.get('view').kwargs.get('title_id')
+            title = get_object_or_404(Title, pk=title_id)
+            if Review.objects.filter(
+                title=title, author=request.user
+            ).exists():
                 raise serializers.ValidationError('Отзыв уже существует!')
         return data
 
@@ -82,7 +85,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = SlugRelatedField(
+    author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
         default=serializers.CurrentUserDefault(),
@@ -99,10 +102,16 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role'
         )
 
     def validate(self, data):
@@ -113,14 +122,29 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AuthSignUpSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = ('email', 'username')
 
+    def validate_username(self, name):
+        if name == 'me':
+            raise serializers.ValidationError(FORBIDDEN_NAME)
+        return name
+
     def validate(self, data):
-        if data.get('username') == FORBIDDEN_NAME:
-            raise serializers.ValidationError(
-                {'username': FORBIDDEN_NAME_MSG})
+        username = data.get('username')
+        email = data.get('email')
+        if (
+                User.objects.filter(username=username).exists()
+                and User.objects.get(username=username).email != email
+        ):
+            raise serializers.ValidationError(USER_EXISTS_MSG)
+        if (
+                User.objects.filter(email=email).exists()
+                and User.objects.get(email=email).username != username
+        ):
+            raise serializers.ValidationError(EMAIL_EXISTS_MSG)
         return data
 
 
