@@ -53,21 +53,15 @@ class User(AbstractUser):
 
     @property
     def is_user(self):
-        if self.role == USER:
-            return True
-        return False
+        return self.role == USER
 
     @property
     def is_moderator(self):
-        if self.role == MODERATOR:
-            return True
-        return False
+        return self.role == MODERATOR
 
     @property
     def is_admin(self):
-        if self.role == ADMIN:
-            return True
-        return False
+        return self.role == ADMIN
 
 
 class Genre(models.Model):
