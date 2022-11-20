@@ -5,14 +5,12 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.filters import SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import Category, Comment, Genre, Review, Title, User
-
-from api_yamdb.settings import EMAIL_ADMIN
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .filters import TitleFilter
 from .mixins import CreateListDestroyViewSet
@@ -22,6 +20,8 @@ from .serializers import (AuthSignUpSerializer, AuthTokenSerializer,
                           CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleReadSerializer, TitleSerializer, UserSerializer)
+from api_yamdb.settings import EMAIL_ADMIN
+from reviews.models import Category, Genre, Review, Title, User
 
 
 class TitleViewSet(ModelViewSet):
@@ -76,17 +76,15 @@ class CommentViewSet(ModelViewSet):
     permission_classes = (IsAuthorOrAdminOrModerator,)
 
     def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
-        return Comment.objects.filter(review=review)
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'))
+        return review.comments.all()
 
     def perform_create(self, serializer):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, pk=review_id)
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'))
         serializer.save(author=self.request.user, review=review)
 
 
@@ -122,25 +120,18 @@ def signup(request):
     if not User.objects.filter(username=username).exists():
         serializer = AuthSignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if serializer.validated_data['username'] != 'me':
-            serializer.save()
-            send_confirmation_code(username)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(
-            'Username указан неверно!', status=status.HTTP_400_BAD_REQUEST
-        )
+        serializer.save()
+        send_confirmation_code(username)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     user = get_object_or_404(User, username=username)
     serializer = AuthSignUpSerializer(
         user, data=request.data, partial=True
     )
     serializer.is_valid(raise_exception=True)
-    if serializer.validated_data['email'] == user.email:
-        serializer.save()
-        send_confirmation_code(username)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(
-        'Почта указана неверно!', status=status.HTTP_400_BAD_REQUEST
-    )
+    serializer.save()
+    send_confirmation_code(username)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 def send_confirmation_code(username):
@@ -164,12 +155,7 @@ def get_token(request):
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data['username']
     confirmation_code = serializer.validated_data['confirmation_code']
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        return Response(
-            'Пользователь не найден', status=status.HTTP_404_NOT_FOUND
-        )
+    user = get_object_or_404(User, username=username)
     if user.confirmation_code == confirmation_code:
         refresh = RefreshToken.for_user(user)
         token_data = {'token': str(refresh.access_token)}

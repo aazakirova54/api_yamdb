@@ -1,9 +1,12 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 FORBIDDEN_NAME = 'me'
 FORBIDDEN_NAME_MSG = 'Имя пользователя "me" не разрешено.'
+USER_EXISTS_MSG = 'Пользователь с таким username уже зарегистрирован'
+EMAIL_EXISTS_MSG = 'Указанная почта уже зарегестрирована другим пользователем'
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -120,13 +123,28 @@ class AuthSignUpSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'username')
 
+    def validate_username(self, name):
+        if name == 'me':
+            raise serializers.ValidationError(FORBIDDEN_NAME)
+        return name
+
     def validate(self, data):
-        if data.get('username') == FORBIDDEN_NAME:
-            raise serializers.ValidationError(
-                {'username': FORBIDDEN_NAME_MSG})
+        username = data.get('username')
+        email = data.get('email')
+        if (
+                User.objects.filter(username=username).exists()
+                and User.objects.get(username=username).email != email
+        ):
+            raise serializers.ValidationError(USER_EXISTS_MSG)
+        if (
+                User.objects.filter(email=email).exists()
+                and User.objects.get(email=email).username != username
+        ):
+            raise serializers.ValidationError(EMAIL_EXISTS_MSG)
         return data
 
 
 class AuthTokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField(max_length=50)
+
