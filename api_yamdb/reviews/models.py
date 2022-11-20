@@ -18,26 +18,29 @@ class User(AbstractUser):
         (MODERATOR, 'Модератор'),
         (ADMIN, 'Администратор'),
     )
-    first_name = models.CharField(max_length=150, blank=True)
+    first_name = models.CharField(
+        max_length=150,
+        blank=True,
+    )
     email = models.EmailField(
         max_length=254,
         unique=True,
-        verbose_name='Электронная почта'
+        verbose_name='Электронная почта',
     )
     role = models.CharField(
         max_length=16,
         choices=ROLE_CHOICES,
         default=USER,
-        verbose_name='Роль пользователя'
+        verbose_name='Роль пользователя',
     )
     bio = models.TextField(
         blank=True,
-        verbose_name='Биография'
+        verbose_name='Биография',
     )
     confirmation_code = models.CharField(
         max_length=30,
         blank=True,
-        verbose_name='Код авторизации'
+        verbose_name='Код авторизации',
     )
 
     class Meta:
@@ -66,17 +69,17 @@ class User(AbstractUser):
 
 class Genre(models.Model):
     name = models.CharField(
-        verbose_name='название',
-        max_length=200
+        verbose_name='Название',
+        max_length=200,
     )
     slug = models.SlugField(
-        verbose_name='название-ссылка',
+        verbose_name='Название-ссылка',
         unique=True,
     )
 
     class Meta:
-        verbose_name = "Жанр"
-        verbose_name_plural = "Жанры"
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
         ordering = ['name']
 
     def __str__(self):
@@ -85,17 +88,17 @@ class Genre(models.Model):
 
 class Category(models.Model):
     name = models.CharField(
-        verbose_name='название',
-        max_length=200
+        verbose_name='Название',
+        max_length=200,
     )
     slug = models.SlugField(
-        verbose_name='название-ссылка',
+        verbose_name='Название-ссылка',
         unique=True,
     )
 
     class Meta:
-        verbose_name = "Категория"
-        verbose_name_plural = "Категории"
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
         ordering = ['name']
 
     def __str__(self):
@@ -104,29 +107,29 @@ class Category(models.Model):
 
 class Title(models.Model):
     name = models.CharField(
-        verbose_name='название',
+        verbose_name='Название',
         max_length=200,
     )
     genre = models.ManyToManyField(
         Genre,
-        verbose_name='жанр',
+        verbose_name='Жанр',
         related_name='titles',
     )
     description = models.TextField(
-        verbose_name='описание',
+        verbose_name='Описание',
         max_length=400,
         null=True,
         blank=True,
     )
     category = models.ForeignKey(
         Category,
-        verbose_name='категория',
+        verbose_name='Категория',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
     )
     year = models.IntegerField(
-        verbose_name='год',
+        verbose_name='Год',
         validators=(year_validator,),
     )
 
