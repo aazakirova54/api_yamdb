@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 FORBIDDEN_NAME = 'me'
@@ -65,12 +64,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        request = self.context['request']
-        author = request.user
-        title_id = self.context.get('view').kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
-        if request.method == 'POST':
-            if Review.objects.filter(title=title, author=author).exists():
+        if self.context['request'].method == 'POST':
+            title_id = self.context.get('view').kwargs.get('title_id')
+            title = get_object_or_404(Title, pk=title_id)
+            if Review.objects.filter(title=title, author=self.request.user).exists():
                 raise serializers.ValidationError('Отзыв уже существует!')
         return data
 
@@ -102,7 +99,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role'
         )
 
     def validate(self, data):
