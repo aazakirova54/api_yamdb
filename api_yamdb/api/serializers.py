@@ -23,7 +23,7 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleWriteSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Category.objects.all(),
@@ -71,7 +71,9 @@ class ReviewSerializer(serializers.ModelSerializer):
             request = self.context['request']
             title_id = self.context.get('view').kwargs.get('title_id')
             title = get_object_or_404(Title, pk=title_id)
-            if Review.objects.filter(title=title, author=request.user).exists():
+            if Review.objects.filter(
+                title=title, author=request.user
+            ).exists():
                 raise serializers.ValidationError('Отзыв уже существует!')
         return data
 
@@ -100,6 +102,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = (
@@ -119,6 +122,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AuthSignUpSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = ('email', 'username')
@@ -147,4 +151,3 @@ class AuthSignUpSerializer(serializers.ModelSerializer):
 class AuthTokenSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField(max_length=50)
-
