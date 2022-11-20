@@ -47,7 +47,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = SlugRelatedField(
+    author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
         default=serializers.CurrentUserDefault()
@@ -65,9 +65,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if self.context['request'].method == 'POST':
+            request = self.context['request']
             title_id = self.context.get('view').kwargs.get('title_id')
             title = get_object_or_404(Title, pk=title_id)
-            if Review.objects.filter(title=title, author=self.request.user).exists():
+            if Review.objects.filter(title=title, author=request.user).exists():
                 raise serializers.ValidationError('Отзыв уже существует!')
         return data
 
@@ -79,7 +80,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = SlugRelatedField(
+    author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
         default=serializers.CurrentUserDefault(),
