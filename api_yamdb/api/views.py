@@ -19,8 +19,8 @@ from .serializers import (AuthSignUpSerializer, AuthTokenSerializer,
                           CategorySerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitleReadSerializer, TitleSerializer, UserSerializer)
-from reviews.models import Category, Genre, Review, Title, User
 from api_yamdb.settings import EMAIL_ADMIN
+from reviews.models import Category, Genre, Review, Title, User
 
 
 class TitleViewSet(ModelViewSet):
